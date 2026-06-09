@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vite';
+import { defineConfig, type PluginOption } from 'vite';
 import preact from '@preact/preset-vite';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { VitePWA } from 'vite-plugin-pwa';
 
 const MAX_CACHE_SIZE_MB = 50;
@@ -23,6 +24,28 @@ function createRuntimeCache(urlPattern: RegExp, cacheName: string) {
       },
     },
   };
+}
+
+function sentryPlugins(): PluginOption[] {
+  if (!process.env.SENTRY_AUTH_TOKEN) {
+    return [];
+  }
+
+  return [
+    sentryVitePlugin({
+      org: process.env.SENTRY_ORG ?? 'total-reality-engineering',
+      project: process.env.SENTRY_PROJECT ?? 'speako',
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      release: {
+        name: process.env.SENTRY_RELEASE ?? process.env.GITHUB_SHA,
+      },
+      sourcemaps: {
+        assets: './dist/**',
+        filesToDeleteAfterUpload: ['./dist/**/*.map'],
+      },
+      telemetry: false,
+    }) as PluginOption,
+  ];
 }
 
 export default defineConfig({
@@ -59,6 +82,7 @@ export default defineConfig({
         ],
       },
     }),
+    ...sentryPlugins(),
   ],
   server: {
     host: true,
@@ -70,6 +94,7 @@ export default defineConfig({
   publicDir: 'public',
   build: {
     copyPublicDir: true,
+    sourcemap: Boolean(process.env.SENTRY_AUTH_TOKEN),
     rollupOptions: {
       external: [/test-data/],
     },

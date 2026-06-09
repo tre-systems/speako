@@ -1,3 +1,4 @@
+import './sentry';
 import { render } from 'preact';
 import { App } from './app';
 import { env } from '@huggingface/transformers';
