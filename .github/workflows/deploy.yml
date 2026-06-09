@@ -18,6 +18,15 @@ jobs:
 
       - run: npm ci
       - run: npm run build
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ENVIRONMENT: production
+          SENTRY_ORG: ${{ vars.SENTRY_ORG || 'total-reality-engineering' }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'speako' }}
+          SENTRY_RELEASE: ${{ github.sha }}
+          VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
+          VITE_SENTRY_ENVIRONMENT: production
+          VITE_SENTRY_RELEASE: ${{ github.sha }}
       - run: rm -rf dist/models
 
       - name: Deploy to Cloudflare Pages
